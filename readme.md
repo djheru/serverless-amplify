@@ -9,3 +9,12 @@
 `amplify add api` - answer questions
 `amplify push` - Updates the cloudformation stack, generates mutations and queries
 `npm i aws-amplify aws-amplify-react` - Client for amplify 
+
+Add withAuthenticator HOC to App, create user and log in
+
+`amplify console` - Opens a browser window with details about users, etc
+  - Can also modify auth settings for required fields and validation options
+
+
+
+

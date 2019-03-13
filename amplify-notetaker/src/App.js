@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { withAuthenticator } from 'aws-amplify-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { createNote } from './graphql/mutations';
+import { listNotes } from './graphql/queries';
 
 class App extends Component {
 
@@ -9,6 +10,16 @@ class App extends Component {
     note: '',
     notes: []
   };
+
+  async componentDidMount() {
+    try {
+      const result = await API.graphql(graphqlOperation(listNotes));
+      const { data: { listNotes: { items: notes = [] } = {} } = {} } = result;
+      this.setState({ notes });
+    } catch (e) {
+      console.log('Error retrieving notes', e)
+    }
+  }
 
   handleChangeNote = ({ target: { value: note = '' } = {} } = {}) => this.setState({ note });
 
@@ -22,7 +33,7 @@ class App extends Component {
       const newNotes = [newNote, ...notes ];
       this.setState({notes: newNotes, note: ''});
     } catch (e) {
-      console.log('Error saving note');
+      console.log('Error saving note', e);
     }
   }
 

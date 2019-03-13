@@ -12,15 +12,22 @@ class App extends Component {
 
   handleChangeNote = ({ target: { value: note = '' } = {} } = {}) => this.setState({ note });
 
-  handleAddNote = event => {
-    const { note } = this.state;
+  handleAddNote = async event => {
+    const { note, notes } = this.state;
     event.preventDefault();
     const input = { input: { note } };
-    API.graphql(graphqlOperation(createNote, input));
+    try {
+      const result = await API.graphql(graphqlOperation(createNote, input));
+      const { data: { createNote: newNote = '' } = {} } = result;
+      const newNotes = [newNote, ...notes ];
+      this.setState({notes: newNotes, note: ''});
+    } catch (e) {
+      console.log('Error saving note');
+    }
   }
 
   render() {
-    const { notes } = this.state;
+    const { note, notes } = this.state;
 
     return (
       <div className="flex flex-column items-center juistify-center pa3 bg-washed-red">
@@ -28,7 +35,12 @@ class App extends Component {
           Amplify Notetaker
         </h1>
         <form onSubmit={this.handleAddNote} className="mb3">
-          <input className="pa2 f4" type="text" placeholder="Enter note" onChange={this.handleChangeNote} />
+          <input 
+            className="pa2 f4" 
+            type="text" 
+            placeholder="Enter note" 
+            value={note}
+            onChange={this.handleChangeNote} />
           <button className="pa2 f4" type="submit">Add Note</button>
         </form>
 

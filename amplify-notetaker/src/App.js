@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withAuthenticator } from 'aws-amplify-react';
 import { API, graphqlOperation } from 'aws-amplify';
-import { createNote } from './graphql/mutations';
+import { createNote, deleteNote } from './graphql/mutations';
 import { listNotes } from './graphql/queries';
 
 class App extends Component {
@@ -26,14 +26,27 @@ class App extends Component {
   handleAddNote = async event => {
     const { note, notes } = this.state;
     event.preventDefault();
-    const input = { input: { note } };
+    const input = { note };
     try {
-      const result = await API.graphql(graphqlOperation(createNote, input));
+      const result = await API.graphql(graphqlOperation(createNote, { input }));
       const { data: { createNote: newNote = '' } = {} } = result;
       const newNotes = [newNote, ...notes ];
       this.setState({notes: newNotes, note: ''});
     } catch (e) {
       console.log('Error saving note', e);
+    }
+  }
+
+  handleDeleteNote = async noteId => {
+    try {
+      const { notes } = this.state;
+      const input = { id: noteId };
+      const result = await API.graphql(graphqlOperation(deleteNote, { input }));
+      const { data: { deleteNote: { id = '' } = {} } = {} } = result;
+      const updatedNotes = notes.filter(note => note.id !== id);
+      this.setState({ notes: updatedNotes });
+    } catch (e) {
+      console.log('error deleting note', e);
     }
   }
 
@@ -61,7 +74,7 @@ class App extends Component {
               <li className="list pa1 f3">
                 { note.note}
               </li>
-              <button className="bg-transparent bn f4">
+              <button className="bg-transparent bn f4" onClick={() => this.handleDeleteNote(note.id)}>
                 <span>&times;</span>
               </button>
             </div>

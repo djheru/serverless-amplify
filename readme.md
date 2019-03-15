@@ -106,3 +106,7 @@ Edit your schema at /Users/philipdamra/Workspace/_sandbox/serverless-amplify/amp
  overwrite your current graphql queries, mutations and subscriptions Yes
 ⠏ Updating resources in the cloud. This may take a few minutes...
 ```
+
+`amplify add hosting -> DEV or PROD` - Sets up hosting via S3. If DEV, it's http, if PROD it's HTTPS and CloudFront
+`amplify publish` -> push it up
+`amplify status`

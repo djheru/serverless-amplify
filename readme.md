@@ -110,3 +110,73 @@ Edit your schema at /Users/philipdamra/Workspace/_sandbox/serverless-amplify/amp
 `amplify add hosting -> DEV or PROD` - Sets up hosting via S3. If DEV, it's http, if PROD it's HTTPS and CloudFront
 `amplify publish` -> push it up
 `amplify status`
+
+## Amplify Agora
+
+- Clone starter repo: https://github.com/reedbarger/amplifyagora.git
+- `amplify init` - Answer questions
+- `amplify add api` - Generates boilerplate queries, mutations, subscriptions, schema
+
+```
+type Market @model @searchable { // @searchable creates an elasticsearch-based model
+  id: ID!
+  name: String!
+  products: [Product] @connection(name: "MarketProducts", sortField: "createdAt") // Setup bidirectional relationship between Market and Product
+  tags: [String]
+  owner: String!
+  createdAt: String
+}
+
+type Product @model @auth(rules: [{ allow: owner, identityField: "sub" }]) { // only allow owner to update
+  id: ID!
+  description: String!
+  file: S3Object!
+  market: Market @connection(name: "MarketProducts") // other end of the bidirectional relatinship
+  price: Float!
+  shipped: Boolean!
+  owner: String
+  createdAt: String
+}
+
+type S3Object {
+  bucket: String!
+  region: String!
+  key: String!
+}
+
+type User 
+@model(
+  queries: { get: "getUser"}, // limit the queries that can be invoked
+  mutations: { create: "registerUser", update: "updateUser" }, // limit the mutations, renaming the create mutation to registerUser
+  subscriptions: null
+) {
+  id: ID!
+  username: String!
+  email: String!
+  registered: Boolean
+  orders: [Order] @connection(name: "UserOrders", sortField: "createdAt")
+}
+
+type Order 
+@model(
+  queries: null,
+  mutations: { create: "createOrder" },
+  subscriptions: null
+){
+  id: ID!
+  product: Product @connection
+  user: User @connection(name: "UserOrders")
+  shippingAddress: ShippingAddress
+  createdAt: String
+}
+
+type ShippingAddress {
+  city: String!
+  country: String!
+  address_line1: String!
+  address_state: String!
+  address_zip: String!
+}
+```
+
+- `amplify push` - Builds the API 

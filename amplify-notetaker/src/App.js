@@ -3,6 +3,7 @@ import { withAuthenticator } from 'aws-amplify-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { createNote, deleteNote, updateNote } from './graphql/mutations';
 import { listNotes } from './graphql/queries';
+import { onCreateNote } from './graphql/subscriptions';
 
 class App extends Component {
 
@@ -12,7 +13,25 @@ class App extends Component {
     notes: []
   };
 
-  async componentDidMount() {
+  componentDidMount() {
+    this.getNotes();
+    this.createNoteListner = API.graphql(graphqlOperation(onCreateNote)).subscribe({
+      next: ({ value: { data: { onCreateNote: newNote = {} } = {} } = {} }) => 
+        this.setState({ notes: [ newNote, ...(this.state.notes.filter(note => note.id !== newNote.id)) ]})
+      // {
+      //   const newNote = data.onCreateNote;
+      //   const prevNotes = this.state.notes.filter(note => note.id !== newNote.id);
+      //   const updatedNotes = [...prevNotes, newNote];
+      //   this.setState({ notes: updatedNotes});
+      // }
+    })
+  }
+
+  componentWillUnmount() {
+    this.createNoteListner.unsubscribe();
+  }
+
+  getNotes = async () => {
     try {
       const result = await API.graphql(graphqlOperation(listNotes));
       const { data: { listNotes: { items: notes = [] } = {} } = {} } = result;
@@ -34,17 +53,18 @@ class App extends Component {
   }
 
   handleAddNote = async event => {
-    const { note, notes } = this.state;
+    const { note } = this.state;
     event.preventDefault();
     const input = { note };
     try {
       if (this.hasExistingNote()) {
         this.handleUpdateNote()
       } else {
-        const result = await API.graphql(graphqlOperation(createNote, { input }));
-        const { data: { createNote: newNote = '' } = {} } = result;
-        const newNotes = [newNote, ...notes ];
-        this.setState({notes: newNotes, note: ''});
+        await API.graphql(graphqlOperation(createNote, { input }));
+        // const { data: { createNote: newNote = '' } = {} } = result;
+        // const newNotes = [newNote, ...notes ];
+        // this.setState({notes: newNotes, note: ''});
+        this.setState({ note: '' });
       }
     } catch (e) {
       console.log('Error saving note', e);

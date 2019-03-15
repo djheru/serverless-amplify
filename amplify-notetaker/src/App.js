@@ -3,7 +3,7 @@ import { withAuthenticator } from 'aws-amplify-react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { createNote, deleteNote, updateNote } from './graphql/mutations';
 import { listNotes } from './graphql/queries';
-import { onCreateNote } from './graphql/subscriptions';
+import { onCreateNote, onDeleteNote } from './graphql/subscriptions';
 
 class App extends Component {
 
@@ -18,17 +18,16 @@ class App extends Component {
     this.createNoteListner = API.graphql(graphqlOperation(onCreateNote)).subscribe({
       next: ({ value: { data: { onCreateNote: newNote = {} } = {} } = {} }) => 
         this.setState({ notes: [ newNote, ...(this.state.notes.filter(note => note.id !== newNote.id)) ]})
-      // {
-      //   const newNote = data.onCreateNote;
-      //   const prevNotes = this.state.notes.filter(note => note.id !== newNote.id);
-      //   const updatedNotes = [...prevNotes, newNote];
-      //   this.setState({ notes: updatedNotes});
-      // }
-    })
+    });
+    this.deleteNoteListener = API.graphql(graphqlOperation(onDeleteNote)).subscribe({
+      next: ({ value: { data: { onDeleteNote: deletedNote = {} } = {} } = {} }) => 
+        this.setState({ notes: this.state.notes.filter(note => note.id !== deletedNote.id) })
+    }) 
   }
 
   componentWillUnmount() {
     this.createNoteListner.unsubscribe();
+    this.deleteNoteListner.unsubscribe();
   }
 
   getNotes = async () => {
@@ -93,10 +92,7 @@ class App extends Component {
     try {
       const { notes } = this.state;
       const input = { id: noteId };
-      const result = await API.graphql(graphqlOperation(deleteNote, { input }));
-      const { data: { deleteNote: { id = '' } = {} } = {} } = result;
-      const updatedNotes = notes.filter(note => note.id !== id);
-      this.setState({ notes: updatedNotes });
+      await API.graphql(graphqlOperation(deleteNote, { input }));
     } catch (e) {
       console.log('error deleting note', e);
     }

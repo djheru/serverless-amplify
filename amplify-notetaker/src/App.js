@@ -32,7 +32,7 @@ class App extends Component {
   componentWillUnmount() {
     this.createNoteListner.unsubscribe();
     this.updateNoteListener.unsubscribe();
-    this.deleteNoteListner.unsubscribe();
+    this.deleteNoteListener.unsubscribe();
   }
 
   getNotes = async () => {

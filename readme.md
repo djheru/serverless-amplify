@@ -85,3 +85,24 @@ query {
   }
 }
 ```
+
+`amplify update api -> GraphQL -> Amazon Cognito User Pool` - Update the Note model to use the new @auth directive
+`amplify push` - Push the changes by regenerating code and redeploying the updated stack
+Output:
+
+```
+Current Environment: dev
+
+| Category | Resource name    | Operation | Provider plugin   |
+| -------- | ---------------- | --------- | ----------------- |
+| Api      | amplifynotetaker | Update    | awscloudformation |
+| Auth     | cognito78dcb95b  | No Change | awscloudformation |
+? Are you sure you want to continue? Yes
+
+GraphQL schema compiled successfully.
+Edit your schema at /Users/philipdamra/Workspace/_sandbox/serverless-amplify/amplify-notetaker/amplify/backend/api/amplifynotetaker/schema.graphql or place .graphql files in a directory at /Users/philipdamra/Workspace/_sandbox/serverless-amplify/amplify-notetaker/amplify/backend/api/amplifynotetaker/schema
+? Do you want to update code for your updated GraphQL API Yes
+? Do you want to generate GraphQL statements (queries, mutations and subscription) based on your schema types? This will
+ overwrite your current graphql queries, mutations and subscriptions Yes
+⠏ Updating resources in the cloud. This may take a few minutes...
+```

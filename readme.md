@@ -180,3 +180,25 @@ type ShippingAddress {
 ```
 
 - `amplify push` - Builds the API 
+
+### Elasticsearch queries
+
+`amplify console api`
+
+```
+{
+  searchMarkets(filter:{
+    or: [
+      {name: { match: "Zippy"}},
+      {owner:{ match:"Zippy"}},
+      {tags:{match: "Zippy"}}
+    ]
+  }) {
+    items {
+      id
+      name
+      owner
+    }
+  }
+}
+```

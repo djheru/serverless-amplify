@@ -1,24 +1,67 @@
 import React from "react";
+import { Storage, Auth, API, graphqlOperation } from 'aws-amplify';
 import { PhotoPicker } from 'aws-amplify-react';
 // prettier-ignore
 import { Form, Button, Input, Notification, Radio, Progress } from "element-react";
+import { createProduct } from '../graphql/mutations';
+import aws_exports from '../aws-exports';
+import { convertDollarsToCents } from '../utils';
 
 const initialState = {
   description: '',
   price: '',
   shipped: false,
   imagePreview: '',
-  image: ''
+  image: '',
+  isUploading: false,
+  percentUploaded: 0
 };
+
+
 class NewProduct extends React.Component {
   state = { ...initialState };
 
   handleAddProduct = async () => {
     try {
       console.log(this.state);
-      this.setState({ ...initialState })
+      this.setState({ isUploading: true });
+      const visibility = 'public';
+      const { identityId } = await Auth.currentCredentials();
+      const filename = `/${visibility}/${identityId}/${Date.now()}-${this.state.image.name}`;
+      const uploadedFile = await Storage.put(filename, this.state.image.file, {
+        contentType: this.state.image.type,
+        progressCallback: progress => {
+          const percentUploaded = Math.round(progress.loaded / progress.total * 100 );
+          this.setState({ percentUploaded })
+        }
+      });
+      const file = {
+        key: uploadedFile.key,
+        bucket: aws_exports.aws_user_files_s3_bucket,
+        region: aws_exports.aws_project_region
+      };
+      const input = {
+        productMarketId: this.props.marketId,
+        description: this.state.description,
+        shipped: this.state.shipped, 
+        price: convertDollarsToCents(this.state.price),
+        file
+      };
+      const result = await API.graphql(graphqlOperation(createProduct, { input }));
+      console.log('Created product', result)
+      Notification({
+        title: 'Success',
+        message: 'Product successfully created',
+        type: 'success'
+      })
+      this.setState({ ...initialState });
     } catch (e) {
       console.error(e);
+      Notification({
+        title: 'Success',
+        message: 'Error saving product',
+        type: 'error'
+      })
     }
   }
 
@@ -28,7 +71,9 @@ class NewProduct extends React.Component {
       price,
       image,
       shipped, 
-      imagePreview 
+      imagePreview,
+      isUploading,
+      percentUploaded
     } = this.state;
     return (
       <div className="flex-center">
@@ -71,6 +116,9 @@ class NewProduct extends React.Component {
                 src={imagePreview}
                 alt="product preview" />
             ) : null }
+
+            { percentUploaded > 0 ? (<Progress type="circle" className="progress" percentage={percentUploaded} status="success" />) : null }
+
             <PhotoPicker
               title="Product Image"
               preview="hidden"
@@ -101,9 +149,10 @@ class NewProduct extends React.Component {
               }} />
             <Form.Item>
               <Button 
-                disabled={!image || !description || !price}
+                disabled={!image || !description || !price || isUploading}
+                loading={isUploading}
                 type="primary" 
-                onClick={this.handleAddProduct}>Add Product</Button>
+                onClick={this.handleAddProduct}>{isUploading ? 'Uploading...' : 'Add Product' }</Button>
             </Form.Item>
           </Form>
         </div>

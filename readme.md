@@ -202,3 +202,8 @@ type ShippingAddress {
   }
 }
 ```
+
+### Adding a storage resource
+
+`amplify add storage` -> content -> friendlyname -> bucketname -> auth and/or guest -> access
+`amplify push`

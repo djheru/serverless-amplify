@@ -207,3 +207,54 @@ type ShippingAddress {
 
 `amplify add storage` -> content -> friendlyname -> bucketname -> auth and/or guest -> access
 `amplify push`
+
+### Add a lambda for Stripe charges
+
+`amplify add api` -> REST -> orderlambda -> /charge -> create new -> orderlambda -> Serverless express function -> Y
+Edit it, go back to terminal, hit enter
+Restrict API address -> Authenticated user only -> write -> n 
+`amplify push`
+
+Stripe checkout response:
+
+```
+{
+	"success": "post call succeed!",
+	"url": "/charge",
+	"body": {
+		"token": {
+			"id": "tok_1EHccmHSQtC7uvC2Amd5n96g",
+			"object": "token",
+			"card": {
+				"id": "card_1EHcclHSQtC7uvC2QuXpbizf",
+				"object": "card",
+				"address_city": null,
+				"address_country": null,
+				"address_line1": null,
+				"address_line1_check": null,
+				"address_line2": null,
+				"address_state": null,
+				"address_zip": null,
+				"address_zip_check": null,
+				"brand": "Visa",
+				"country": "US",
+				"cvc_check": "pass",
+				"dynamic_last4": null,
+				"exp_month": 4,
+				"exp_year": 2024,
+				"funding": "credit",
+				"last4": "4242",
+				"metadata": {},
+				"name": "pdamra+1@gmail.com",
+				"tokenization_method": null
+			},
+			"client_ip": "68.99.230.71",
+			"created": 1553458136,
+			"email": "pdamra+1@gmail.com",
+			"livemode": false,
+			"type": "card",
+			"used": false
+		}
+	}
+}
+```

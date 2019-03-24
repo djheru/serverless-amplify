@@ -1,7 +1,6 @@
 import React from "react";
 import { API } from 'aws-amplify';
 import StripeCheckout from 'react-stripe-checkout';
-import { userInfo } from "os";
 // import { Notification, Message } from "element-react";
 
 const stripeConfig = {
@@ -14,7 +13,12 @@ const PayButton = ({ product, user }) => {
     try { 
       const result = await API.post('orderlambda', '/charge', {
         body: {
-          token
+          token,
+          charge: {
+            currency: stripeConfig.currency,
+            amount: product.price,
+            description: product.description
+          }
         }
       });
       console.log(JSON.stringify(result, null, '\t'));

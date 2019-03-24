@@ -27,13 +27,13 @@ class Product extends React.Component {
          shipped,
          price: convertDollarsToCents(price)
        };
-       const result = await API.graphql(graphqlOperation(updateProduct, { input }));
+
+      await API.graphql(graphqlOperation(updateProduct, { input }));
        Notification({
          title: "Success!",
          message: "You did the thing!",
          type: "success"
        });
-       setTimeout(() => window.location.reload(), 2000);
     } catch (e) {
       console.error(e);
     }
@@ -49,7 +49,6 @@ class Product extends React.Component {
         message: "You did the thing!",
         type: "success"
       });
-      setTimeout(() => window.location.reload(), 2000);
     } catch (e) {
       console.error(e);
     }

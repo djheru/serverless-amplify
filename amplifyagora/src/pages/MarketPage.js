@@ -2,6 +2,7 @@ import React from "react";
 import {API, graphqlOperation } from 'aws-amplify';
 import { Link } from 'react-router-dom';
 import { Loading, Tabs, Icon } from "element-react";
+import {onCreateProduct, onUpdateProduct, onDeleteProduct } from '../graphql/subscriptions';
 import NewProduct from '../components/NewProduct';
 import Product from '../components/Product';
 
@@ -41,6 +42,57 @@ class MarketPage extends React.Component {
 
   componentDidMount() {
     this.handleGetMarket();
+
+    this.createProductListener = API
+      .graphql(graphqlOperation(onCreateProduct))
+      .subscribe({
+        next: productData => {
+          const { value: { data: { onCreateProduct: createdProduct } = {}} = {}} = productData;
+          const prevProducts = this.state.market.products.items.filter(({ id }) => id !== createdProduct.id);
+          const updatedProducts = [
+            createdProduct,
+            ...prevProducts
+          ];
+          const market = { ...this.state.market };
+          market.products.items = updatedProducts;
+          this.setState({ market });
+        }
+      });
+
+    this.updateProductListener = API
+      .graphql(graphqlOperation(onUpdateProduct))
+      .subscribe({
+        next: productData => {
+          const updatedProduct = productData.value.data.onUpdateProduct;
+          const productIndex = this.state.market.products.items.findIndex(({ id }) => updatedProduct.id === id);
+          const updatedProducts = [
+            ...this.state.market.products.items.slice(0, productIndex),
+            updatedProduct,
+            ...this.state.market.products.items.slice(productIndex + 1)
+          ];
+          const market = { ...this.state.market };
+          market.products.items = updatedProducts;
+          this.setState({ market})
+        }
+      });
+
+      this.deleteProductListener = API
+        .graphql(graphqlOperation(onDeleteProduct))
+        .subscribe({
+          next: productData => {
+            const { value: { data: { onDeleteProduct: deletedProduct } = {}} = {}} = productData;
+            const deletedProducts = this.state.market.products.items.filter(({ id }) => id !== deletedProduct.id);
+            const market = { ...this.state.market };
+            market.products.items = deletedProducts;
+            this.setState({ market });
+          }
+        });
+  }
+
+  componentWillUnmount() {
+    this.createProductListener.unsubscribe();
+    this.updateProductListener.unsubscribe();
+    this.deleteProductListener.unsubscribe();
   }
 
   handleGetMarket = async () => {

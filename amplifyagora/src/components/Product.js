@@ -6,10 +6,11 @@ import { convertCentsToDollars, convertDollarsToCents } from '../utils';
 import { API, graphqlOperation } from 'aws-amplify';
 import { UserContext } from '../App';
 import PayButton from './PayButton';
-import { updateProduct } from "../graphql/mutations";
+import { updateProduct, deleteProduct } from "../graphql/mutations";
 
 class Product extends React.Component {
   state = {
+    deleteProductDialog: false,
     updateProductDialog: false,
     description: '',
     price: '',
@@ -27,12 +28,28 @@ class Product extends React.Component {
          price: convertDollarsToCents(price)
        };
        const result = await API.graphql(graphqlOperation(updateProduct, { input }));
-       console.dir(result);
        Notification({
          title: "Success!",
          message: "You did the thing!",
          type: "success"
-       })
+       });
+       setTimeout(() => window.location.reload(), 2000);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  handleDeleteProduct = async id => {
+    try {
+      this.setState({ deleteProductDialog: false });
+      const input = { id }
+      await API.graphql(graphqlOperation(deleteProduct, { input }))
+      Notification({
+        title: "Success!",
+        message: "You did the thing!",
+        type: "success"
+      });
+      setTimeout(() => window.location.reload(), 2000);
     } catch (e) {
       console.error(e);
     }
@@ -42,6 +59,7 @@ class Product extends React.Component {
 
     const { product } = this.props;
     const { 
+      deleteProductDialog,
       updateProductDialog,
       description,
       price,
@@ -91,12 +109,35 @@ class Product extends React.Component {
                           price: convertCentsToDollars(product.price)
                         })}>
                         </Button>
-                      <Button 
-                        type="danger"
-                        icon="delete"
-                        className="m-1"
-                        onClick={() => this.setState({ updateProductDialog: true })}>
-                        </Button>
+
+                        <Popover
+                          placement="top"
+                          width="160"
+                          trigger="click"
+                          visible={deleteProductDialog}
+                          content={
+                            <>
+                              <p>Do you really want to delete this product?</p>
+                              <div className="text-right">
+                                <Button 
+                                  size="mini"
+                                  type="text"
+                                  className="m-1"
+                                  onClick={() => this.setState({ deleteProductDialog: false })}>Cancel</Button>
+                                <Button 
+                                  size="mini"
+                                  type="primary"
+                                  className="m-1"
+                                  onClick={() => this.handleDeleteProduct(product.id)}>Confirm</Button>
+                              </div>
+                            </>
+                          }>
+                          <Button 
+                            type="danger"
+                            icon="delete"
+                            className="m-1"
+                            onClick={() => this.setState({ deleteProductDialog: true })}/>
+                        </Popover>
                     </>
                   ) : null}
                 </div>

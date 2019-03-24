@@ -31,7 +31,6 @@ const MarketList = ({ searchResults }) => {
           return <Loading fullscreen={true}/>
         }
 
-        console.log(data.listMarkets);
         const markets = (searchResults.length > 0) ? searchResults : data.listMarkets.items;
         return (
           <>

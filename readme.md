@@ -262,3 +262,4 @@ Stripe checkout response:
 ### Adding deps to amplify 
 - edit package.json in ./amplify/backend/function/orderlambda  (each lambda is its own project)
 - from the root directory, call `amplify function build`
+

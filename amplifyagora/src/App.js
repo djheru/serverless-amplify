@@ -28,25 +28,34 @@ class App extends React.Component {
   }
 
   registerNewUser = async signInData => {
-    if (signInData && signInData.signInUserSetssion) {
-      const getUserInput = {
-        id: signInData.signInUserSetssion.idToken.payload.sub
-      };
-      const { data } = await API.graphql(graphqlOperation(getUser, getUserInput));
-      if (!data.getUser) {
-        try {
-          const registerUserInput = {
-            ...getUserInput,
-            username: signInData.username,
-            email: signInData.signInUserSetssion.idToken.payload.email,
-            registered: true
-          };
-          const newUser = await API.graphql(graphqlOperation(registerUser, { input: registerUserInput }))
-          console.log(newUser)
-        } catch (e) {
-          console.error(e);
+    if (signInData && signInData.signInUserSession) {
+      try {
+        const getUserInput = {
+          id: signInData.signInUserSession.idToken.payload.sub
+        };
+        console.log('ohai', signInData)
+        const result = await API.graphql(graphqlOperation(getUser, getUserInput));
+        const { data }  = result;
+        console.log('data from getUSer')
+        console.dir(data);
+        if (!data.getUser) { // user hasn't been registered yet
+          try {
+            const registerUserInput = {
+              ...getUserInput,
+              username: signInData.username,
+              email: signInData.signInUserSession.idToken.payload.email,
+              registered: true
+            };
+            const newUser = await API.graphql(graphqlOperation(registerUser, { input: registerUserInput }))
+            console.log(newUser)
+          } catch (e) {
+            console.error(e);
+          }
         }
+      } catch (e) {
+        console.log(e);
       }
+      
     }
   }
 
@@ -81,7 +90,10 @@ class App extends React.Component {
 
   render() {
     const { user } = this.state;
-    return !user ? (<Authenticator theme={theme}/>) : (
+    if (!user) {
+      return (<Authenticator theme={theme}/>);
+    }
+    return (
       <UserContext.Provider value={{user}}>
         <Router>
           <React.Fragment>

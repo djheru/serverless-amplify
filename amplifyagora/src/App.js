@@ -1,7 +1,9 @@
 import React from "react";
 import { Authenticator, AmplifyTheme } from 'aws-amplify-react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
-import { Auth, Hub } from 'aws-amplify';
+import { Auth, Hub, API, graphqlOperation} from 'aws-amplify';
+import { getUser} from './graphql/queries';
+import { registerUser } from './graphql/mutations';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
 import MarketPage from './pages/MarketPage';
@@ -25,6 +27,28 @@ class App extends React.Component {
     user ? this.setState({ user }) : this.setState({ user: null });
   }
 
+  registerNewUser = async signInData => {
+    if (signInData && signInData.signInUserSetssion) {
+      const getUserInput = {
+        id: signInData.signInUserSetssion.idToken.payload.sub
+      };
+      const { data } = await API.graphql(graphqlOperation(getUser, getUserInput));
+      if (!data.getUser) {
+        try {
+          const registerUserInput = {
+            ...getUserInput,
+            username: signInData.username,
+            email: signInData.signInUserSetssion.idToken.payload.email,
+            registered: true
+          };
+          const newUser = await API.graphql(graphqlOperation(registerUser, { input: registerUserInput }))
+          console.log(newUser)
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  }
 
   onHubCapsule = capsule => {
     const { payload: { event = '' } = {} } = capsule;
@@ -32,6 +56,7 @@ class App extends React.Component {
       case 'signIn':
         console.log('signIn');
         this.getUserData();
+        this.registerNewUser(capsule.payload.data);
         break;
       case 'signUp': 
         console.log('signUp');

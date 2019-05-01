@@ -103,7 +103,7 @@ class App extends React.Component {
             <Navbar  user={user} handleSignout={this.handleSignout}/>
             <div className="app-container">
               <Route exact path="/" component={HomePage} />
-              <Route exact path="/profile" component={ProfilePage} />
+              <Route exact path="/profile" component={() => <ProfilePage user={user} />} />
               <Route exact path="/markets/:marketId" component={({ match: { params: { marketId = '' } = {} } = {} }) => <MarketPage user={user} marketId={marketId}  />} />
             </div>
           </React.Fragment>

@@ -42,7 +42,7 @@ class ProfilePage extends React.Component {
       { prop: 'name', width: '150' },
       { prop: 'value', width: '330' },
       { prop: 'tag', width: '150', render: row => row.name === 'Email' ? (
-        this.props.user.attributes.email_verified ? 
+        this.props.userAttributes.email_verified ? 
           (<Tag type="success">Verified</Tag>) : (<Tag type="danger">Unverified</Tag>)
         ) : null},
       { prop: 'operations', render: row => {
@@ -59,8 +59,9 @@ class ProfilePage extends React.Component {
   };
 
   componentDidMount() {
-    if (this.props.user) {
-      this.getUserOrders(this.props.user.attributes.sub);
+    if (this.props.userAttributes) {
+      console.log(this.props.userAttributes)
+      this.getUserOrders(this.props.userAttributes.sub);
     }
   }
 
@@ -71,8 +72,11 @@ class ProfilePage extends React.Component {
 
   render() {
     const { orders, columns } = this.state;
-    const { user } = this.props;
-    console.log(orders);
+    const { userAttributes, user } = this.props;
+    console.log(userAttributes);
+    if (!userAttributes) {
+      return null;
+    }
     return (
       <>
         <Tabs activeName="1" className="profile-tabs">
@@ -88,10 +92,10 @@ class ProfilePage extends React.Component {
             </h2>
             <Table 
               data={[
-                { name: 'Your ID', value: user.attributes.sub },
+                { name: 'Your ID', value: userAttributes.sub },
                 { name: 'Username', value: user.username },
-                { name: 'Email', value: user.attributes.email },
-                { name: 'Phone Number', value: user.attributes.phone_number },
+                { name: 'Email', value: userAttributes.email },
+                { name: 'Phone Number', value: userAttributes.phone_number },
                 { name: 'Delete Profile', value: 'Sorry to see you go' },
               ]}
               showHeader={false}

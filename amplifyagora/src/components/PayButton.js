@@ -11,7 +11,7 @@ const stripeConfig = {
   publishableAPIKey: 'pk_test_7qoV70ArKzUTSAIqQhPHJIS600HP5djgSx'
 }
 
-const PayButton = ({ product, user }) => {
+const PayButton = ({ product, userAttributes }) => {
   const getOwnerEmail = async ownerId => {
     try {
       const input = { id: ownerId };
@@ -49,7 +49,7 @@ const PayButton = ({ product, user }) => {
             shipped: product.shipped
           },
           email: {
-            customerEmail: user.attributes.email,
+            customerEmail: userAttributes.email,
             ownerEmail,
           }
         }
@@ -62,7 +62,7 @@ const PayButton = ({ product, user }) => {
         }
         const input = {
           shippingAddress,
-          orderUserId: user.attributes.sub,
+          orderUserId: userAttributes.sub,
           orderProductId: product.id
         };
         const order = await API.graphql(graphqlOperation(createOrder, { input }));
@@ -95,7 +95,7 @@ const PayButton = ({ product, user }) => {
   return (
     <StripeCheckout
       token={handleCharge}
-      email={user.attributes.email}
+      email={userAttributes.email}
       name={product.description}
       amount={product.price}
       shippingAddress={product.shipped}

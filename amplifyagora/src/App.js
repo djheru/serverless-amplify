@@ -17,7 +17,8 @@ export const UserContext = React.createContext();
 
 class App extends React.Component {
   state = {
-    user: null
+    user: null,
+    userAttributes: null
   };
 
   componentDidMount() {
@@ -27,7 +28,15 @@ class App extends React.Component {
 
   getUserData = async () => {
     const user = await Auth.currentAuthenticatedUser();
-    user ? this.setState({ user }) : this.setState({ user: null });
+    user ? this.setState({ user }, () => this.getUserAttributes(this.state.user)) : this.setState({ user: null });
+  }
+
+  getUserAttributes = async authUserData => {
+    const attributesArray = await Auth.userAttributes(authUserData);
+    console.log(attributesArray)
+    const userAttributes = await Auth.attributesToObject(attributesArray);
+    console.log(userAttributes)
+    this.setState({ userAttributes })
   }
 
   registerNewUser = async signInData => {
@@ -92,18 +101,20 @@ class App extends React.Component {
   }
 
   render() {
-    const { user } = this.state;
+    const { user, userAttributes } = this.state;
     if (!user) {
       return (<Authenticator theme={theme}/>);
     }
     return (
-      <UserContext.Provider value={{user}}>
+      <UserContext.Provider value={{user, userAttributes}}>
         <Router history={history}>
           <React.Fragment>
             <Navbar  user={user} handleSignout={this.handleSignout}/>
             <div className="app-container">
               <Route exact path="/" component={HomePage} />
-              <Route exact path="/profile" component={() => <ProfilePage user={user} />} />
+              <Route 
+                exact path="/profile" 
+                component={() => <ProfilePage user={user} userAttributes={userAttributes} />} />
               <Route exact path="/markets/:marketId" component={({ match: { params: { marketId = '' } = {} } = {} }) => <MarketPage user={user} marketId={marketId}  />} />
             </div>
           </React.Fragment>

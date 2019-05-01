@@ -37,6 +37,8 @@ const getUser = `query GetUser($id: ID!) {
 
 class ProfilePage extends React.Component {
   state = {
+    email: this.props.userAttributes ? this.props.userAttributes.email : '',
+    emailDialog: false,
     orders: [],
     columns: [
       { prop: 'name', width: '150' },
@@ -48,9 +50,15 @@ class ProfilePage extends React.Component {
       { prop: 'operations', render: row => {
         switch(row.name) {
           case 'Email':
-            return (<Button type="info" size="small">Edit</Button>);
+            return (<Button 
+              onClick={() => { this.setState({ emailDialog: true })}} 
+              type="info" size="small">Edit</Button>);
           case 'Delete Profile':
-            return (<Button type="danger" size="small">Delete</Button>);
+            return (
+              <Button 
+                type="danger" 
+                size="small">Delete</Button>
+            );
           default:
             return;
         }
@@ -70,8 +78,12 @@ class ProfilePage extends React.Component {
     this.setState({ orders: result.data.getUser.orders.items });
   }
 
+  handleUpdateEmail = () => {
+    console.log(this.state);
+  }
+
   render() {
-    const { orders, columns } = this.state;
+    const { orders, columns, email, emailDialog } = this.state;
     const { userAttributes, user } = this.props;
     console.log(userAttributes);
     if (!userAttributes) {
@@ -145,6 +157,28 @@ class ProfilePage extends React.Component {
             }
           </Tabs.Pane>
         </Tabs>
+        <Dialog
+          size="large"
+          customClass="dialog"
+          title="Edit Email Address"
+          visible={emailDialog}
+          onCancel={() => { this.setState({ emailDialog: false})}}>
+          <Dialog.Body>
+            <Form labelPosition="top">
+              <Form.Item label="Email">
+                <Input
+                  value={email}
+                  onChange={email => this.setState({ email })} />
+              </Form.Item>
+            </Form>
+          </Dialog.Body>
+          <Dialog.Footer>
+            <Button onClick={() => { this.setState({ emailDialog: false })}}>Cancel</Button>
+            <Button 
+              type="primary"
+              onClick={this.handleUpdateEmail}>Save</Button>
+          </Dialog.Footer>
+        </Dialog>
       </>
     )
   }

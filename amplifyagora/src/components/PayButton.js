@@ -45,12 +45,12 @@ const PayButton = ({ product, user }) => {
           charge: {
             currency: stripeConfig.currency,
             amount: product.price,
-            description: product.description
+            description: product.description,
+            shipped: product.shipped
           },
           email: {
             customerEmail: user.attributes.email,
             ownerEmail,
-            shipped: product.shipped
           }
         }
       });

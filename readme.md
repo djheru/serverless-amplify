@@ -2,15 +2,15 @@
 
 ## Setup 
 
-`npm i -g @aws-amplify/cli`
-`npx create-react-app amplify-notetaker && cd amplify-notetaker`
-`amplify configure` - creates new IAM user
-`amplify init` - asks questions and builds a stack
-`amplify add api` - answer questions
-`amplify push` - Updates the cloudformation stack, generates mutations and queries
-`npm i aws-amplify aws-amplify-react` - Client for amplify 
+- `npm i -g @aws-amplify/cli`
+- `npx create-react-app amplify-notetaker && cd amplify-notetaker`
+- `amplify configure` - creates new IAM user
+- `amplify init` - asks questions and builds a stack
+- `amplify add api` - answer questions
+- `amplify push` - Updates the cloudformation stack, generates mutations and queries
+- `npm i aws-amplify aws-amplify-react` - Client for amplify 
 
-Add withAuthenticator HOC to App, create user and log in
+- Add withAuthenticator HOC to App, create user and log in
 
 `amplify console -> auth` - Opens a browser window with details about users, etc
   - Can also modify auth settings for required fields and validation options
@@ -86,8 +86,8 @@ query {
 }
 ```
 
-`amplify update api -> GraphQL -> Amazon Cognito User Pool` - Update the Note model to use the new @auth directive
-`amplify push` - Push the changes by regenerating code and redeploying the updated stack
+- `amplify update api -> GraphQL -> Amazon Cognito User Pool` - Update the Note model to use the new @auth directive
+- `amplify push` - Push the changes by regenerating code and redeploying the updated stack
 Output:
 
 ```

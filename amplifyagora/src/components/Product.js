@@ -1,5 +1,6 @@
 import React from "react";
 import { S3Image } from 'aws-amplify-react';
+import { Link } from 'react-router-dom';
 // prettier-ignore
 import { Notification, Popover, Button, Dialog, Card, Form, Input, Radio } from "element-react";
 import { convertCentsToDollars, convertDollarsToCents } from '../utils';
@@ -71,6 +72,7 @@ class Product extends React.Component {
         {
           ({userAttributes}) => {
             const isProductOwner = userAttributes && userAttributes.sub === product.owner;
+            const isEmailVerified = userAttributes && userAttributes.email_verified;
             return (
               <div className="card-container">
                 <Card bodyStyle={{ padding: 0, minWidth: '200px'}}>
@@ -90,11 +92,13 @@ class Product extends React.Component {
                       <span className="mx-1">
                         ${convertCentsToDollars(product.price)}
                       </span>
-                      {!isProductOwner ? (
-                        <PayButton
-                          product={product}
-                          userAttributes={userAttributes} />
-                      ) : null }
+                      { isEmailVerified ? (
+                        !isProductOwner ? (
+                          <PayButton
+                            product={product}
+                            userAttributes={userAttributes} />
+                        ) : null
+                      ) : <Link to="/profile">Verify your email before purchasing products</Link> }
                     </div>
                   </div>
                 </Card>

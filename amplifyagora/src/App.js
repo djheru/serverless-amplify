@@ -115,7 +115,7 @@ class App extends React.Component {
               <Route 
                 exact path="/profile" 
                 component={() => <ProfilePage user={user} userAttributes={userAttributes} />} />
-              <Route exact path="/markets/:marketId" component={({ match: { params: { marketId = '' } = {} } = {} }) => <MarketPage user={user} marketId={marketId}  />} />
+              <Route exact path="/markets/:marketId" component={({ match: { params: { marketId = '' } = {} } = {} }) => <MarketPage userAttributes={userAttributes} user={user} marketId={marketId}  />} />
             </div>
           </React.Fragment>
         </Router>

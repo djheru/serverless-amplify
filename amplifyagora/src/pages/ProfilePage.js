@@ -1,5 +1,5 @@
 import React from "react";
-import { API, graphqlOperation } from 'aws-amplify';
+import { Auth, API, graphqlOperation } from 'aws-amplify';
 // prettier-ignore
 import { Table, Button, Notification, MessageBox, Message, Tabs, Icon, Form, Dialog, Input, Card, Tag } from 'element-react'
 import { convertCentsToDollars } from '../utils';
@@ -39,6 +39,8 @@ class ProfilePage extends React.Component {
   state = {
     email: this.props.userAttributes ? this.props.userAttributes.email : '',
     emailDialog: false,
+    verificationCode: '',
+    verificationForm: false,
     orders: [],
     columns: [
       { prop: 'name', width: '150' },
@@ -78,12 +80,57 @@ class ProfilePage extends React.Component {
     this.setState({ orders: result.data.getUser.orders.items });
   }
 
-  handleUpdateEmail = () => {
-    console.log(this.state);
+  handleUpdateEmail = async () => {
+    try {
+      const updateAttributes = {
+        email: this.state.email
+      };
+      // Pass in the user and the upated attributes
+      const result = await Auth.updateUserAttributes(this.props.user, updateAttributes);
+      if (result === 'SUCCESS') {
+        this.sendVerificationCode('email');
+      }
+    } catch (e) {
+      console.error(e);
+      Notification.error({
+        title: 'Error',
+        message: e.message || 'Error updating email'
+      })
+    }
+  }
+
+  sendVerificationCode = async attr => {
+    await Auth.verifyCurrentUserAttribute(attr);
+    this.setState({ verificationForm: true});
+    Message({
+      type: 'info',
+      customClass: 'message',
+      message: `Verification code sent to ${this.state.email}`
+    });
+  }
+
+  handleVerifyEmail = async attr => {
+    try {
+      const result = await Auth.verifyCurrentUserAttributeSubmit(attr, this.state.verificationCode);
+      if (result === 'SUCCESS') {
+        Notification({
+          title: 'Success',
+          message: 'Email successfully verified',
+          type: 'success'
+        });
+        setTimeout(() => window.location.reload(), 2500);
+      }
+    } catch (e) {
+      console.error(e);
+      Notification.error({
+        title: 'Error',
+        message: e.message || 'Error verifying email'
+      })
+    }
   }
 
   render() {
-    const { orders, columns, email, emailDialog } = this.state;
+    const { orders, columns, email, emailDialog, verificationCode, verificationForm } = this.state;
     const { userAttributes, user } = this.props;
     console.log(userAttributes);
     if (!userAttributes) {
@@ -170,13 +217,32 @@ class ProfilePage extends React.Component {
                   value={email}
                   onChange={email => this.setState({ email })} />
               </Form.Item>
+              {
+                verificationForm ? (
+                  <Form.Item
+                    label="Enter verification code"
+                    labelWidth="120">
+                    <Input 
+                      value={verificationCode}
+                      onChange={ verificationCode => this.setState({ verificationCode })} />
+                  </Form.Item>
+                ) : null
+              }
             </Form>
           </Dialog.Body>
           <Dialog.Footer>
             <Button onClick={() => { this.setState({ emailDialog: false })}}>Cancel</Button>
-            <Button 
-              type="primary"
-              onClick={this.handleUpdateEmail}>Save</Button>
+            {
+              !verificationForm ? (
+                <Button 
+                  type="primary"
+                  onClick={this.handleUpdateEmail}>Save</Button>
+              ) : (
+                <Button 
+                  type="primary"
+                  onClick={() => this.handleVerifyEmail('email')}>Submit</Button>
+              )
+            }
           </Dialog.Footer>
         </Dialog>
       </>
